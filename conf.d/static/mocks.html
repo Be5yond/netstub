@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>mock管理</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link rel="stylesheet" href="sdk\sdk.css" />
+    <style>
+        html,
+        body,
+        .app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root" class="app-wrapper"></div>
+    <script src="sdk\sdk.js"></script>
+    <script type="text/javascript">
+        (function () {
+            let amis = amisRequire('amis/embed');
+            // mock数据管理页面
+            let amisScoped = amis.embed('#root',
+                {
+                    "type": "page",
+                    "toolbar": [
+                    ],
+                    "body": [
+                        // 导航栏
+                        {
+                            "type": "nav",
+                            "stacked": false,
+                            "links": [
+                                {
+                                    "label": "接口配置",
+                                    "to": "/static/index.html",
+                                    "icon": "fa fa-home"
+                                },
+                                {
+                                    "label": "Mock数据配置",
+                                    "to": "/static/mocks.html",
+                                    "icon": "fa fa-table",
+                                    "active": true
+                                },
+                                {
+                                    "label": "Replay数据配置",
+                                    "to": "/static/replay.html",
+                                    "icon": "fa fa-recycle",
+                                },
+                                {
+                                    "label": "Log数据",
+                                    "to": "http://localhost:3000",
+                                    "icon": "fa fa-file"
+                                },
+                            ]
+                        },
+
+                        {
+                            "type": "crud",
+                            "api": "/admin/mock/${path}",
+                            "quickSaveItemApi": "post:/admin/mock/${path}?id=${id}",
+                            "name": "sheet",
+                            // 控制面板
+                            "filter": {
+                                "title": "筛选",
+                                "submitText": "",
+                                "controls": [
+                                    {
+                                        "type": "text",
+                                        "name": "path",
+                                        "placeholder": "接口路径,支持从头匹配"
+                                    },
+                                    {
+                                        "label": "搜索",
+                                        "type": "button",
+                                        "level": "light",
+                                        "actionType": "submit",
+                                        "className": "m-b-sm",
+                                        "icon": "fa fa-search pull-left",
+                                    },
+                                    {
+                                        "label": "新增",
+                                        "type": "button",
+                                        "actionType": "dialog",
+                                        "level": "primary",
+                                        "className": "m-b-sm pull-right",
+                                        "icon": "fa fa-plus pull-left",
+                                        "dialog": {
+                                            "size": "xl",
+                                            "title": "新建一条数据",
+                                            "body": {
+                                                "type": "form",
+                                                "api": "post:/admin/mock/${path}",
+                                                "controls": [
+                                                    {
+                                                        "type": "text",
+                                                        "name": "info",
+                                                        "label": "说明",
+                                                        "value": ""
+                                                    },
+                                                    {
+                                                        "name": "switch",
+                                                        "type": "switch",
+                                                        "label": "开关",
+                                                        "option": "数据是否生效",
+                                                        "value": true
+                                                    },
+                                                    {
+                                                        "name": "data",
+                                                        "type": "json-editor",
+                                                        "language": "json",
+                                                        "label": "DATA",
+                                                        "value": "[]"
+                                                    },
+                                                    {
+                                                        "name": "resp",
+                                                        "type": "editor",
+                                                        "language": "json",
+                                                        "label": "RESPONSE",
+                                                        "value": {}
+                                                    },
+                                                ],
+                                            }
+                                        }
+                                    },
+                                ]
+                            },
+                            // 表格列表
+                            "columns": [
+                                {
+                                    "name": "id",
+                                    "width": 250,
+                                    "value": "${id}[0]",
+                                    "label": "${path}"
+                                },
+                                {
+                                    "name": "info",
+                                    "label": "说明"
+                                },
+                                {
+                                    "name": "switch",
+                                    "width": 80,
+                                    "type": "switch",
+                                    "label": "开关",
+                                    "quickEdit": {
+                                        "mode": "inline",
+                                        "type": "switch",
+                                        "trueValue": "true",
+                                        "saveImmediately": true
+                                    }
+                                },
+                                {
+                                    "name": "data",
+                                    "label": "data",
+                                    "type": "json",
+                                    "jsonTheme": "eighties",
+                                },
+                                {
+                                    "name": "resp",
+                                    "label": "response",
+                                    "type": "json",
+                                    "jsonTheme": "eighties",
+                                },
+                                // 修改
+                                {
+                                    "type": "operation",
+                                    "label": "操作",
+                                    "width": 200,
+                                    "buttons": [
+                                        {
+                                            "label": "编辑",
+                                            "type": "button",
+                                            "actionType": "dialog",
+                                            "level": "success",
+                                            "className": "m-b-sm pull-left",
+                                            "icon": "fa fa-edit pull-left",
+                                            "dialog": {
+                                                "size": "xl",
+                                                "title": "",
+                                                "body": {
+                                                    "type": "form",
+                                                    "api": "post:/admin/mock/${path}",
+                                                    "controls": [
+                                                        {
+                                                            "type": "text",
+                                                            "name": "info",
+                                                            "label": "说明"
+                                                        },
+                                                        {
+                                                            "name": "switch",
+                                                            "type": "switch",
+                                                            "label": "开关",
+                                                            "trueValue": "true",
+                                                            "option": "数据是否生效",
+                                                        },
+                                                        {
+                                                            "name": "data",
+                                                            "type": "editor",
+                                                            "language": "json",
+                                                            "label": "DATA",
+                                                        },
+                                                        {
+                                                            "name": "resp",
+                                                            "type": "editor",
+                                                            "language": "json",
+                                                            "label": "RESPONSE",
+                                                        },
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "button",
+                                            "label": "删除",
+                                            "level": "danger",
+                                            "icon": "fa fa-trash pull-left",
+                                            "actionType": "ajax",
+                                            "tooltip": "删除",
+                                            "confirmText": "您确认要删除?",
+                                            "api": "delete:/admin/mock/${path}?id=${id}",
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            );
+        })();
+    </script>
+</body>
+
+</html>

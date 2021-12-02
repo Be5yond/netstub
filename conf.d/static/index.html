@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>mock管理</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link rel="stylesheet" href="sdk\sdk.css" />
+    <style>
+        html,
+        body,
+        .app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root" class="app-wrapper"></div>
+    <script src="sdk\sdk.js"></script>
+    <script type="text/javascript">
+        (function () {
+            let amis = amisRequire('amis/embed');
+            // 设备管理页面
+            let amisScoped = amis.embed('#root',
+                {
+                    "type": "page",
+                    "toolbar": [
+                    ],
+                    "body": [
+                        // 导航栏
+                        {
+                            "type": "nav",
+                            "stacked": false,
+                            "links": [
+                                {
+                                    "label": "接口配置",
+                                    "to": "/static/index.html",
+                                    "icon": "fa fa-home",
+                                    "active": true
+                                },
+                                {
+                                    "label": "Mock数据配置",
+                                    "to": "/static/mocks.html",
+                                    "icon": "fa fa-table"
+                                },
+                                {
+                                    "label": "Replay数据配置",
+                                    "to": "/static/replay.html",
+                                    "icon": "fa fa-recycle",
+                                },
+                                {
+                                    "label": "Log数据",
+                                    "to": "http://localhost:3000",
+                                    "icon": "fa fa-file"
+                                },
+                            ]
+                        },
+
+                        {
+                            "type": "crud",
+                            "api": "${host}/admin/mock/",
+                            "name": "sheet",
+                            // 控制面板
+                            "filter": {
+                                "title": "筛选",
+                                "submitText": "",
+                                "controls": [
+                                    {
+                                        "type": "text",
+                                        "name": "path",
+                                        "placeholder": "接口路径,支持从头匹配"
+                                    },
+                                    {
+                                        "label": "搜索",
+                                        "type": "button",
+                                        "level": "light",
+                                        "actionType": "submit",
+                                        "className": "m-b-sm",
+                                        "icon": "fa fa-search pull-left",
+                                    },
+                                    {
+                                        "label": "新增",
+                                        "type": "button",
+                                        "actionType": "dialog",
+                                        "level": "primary",
+                                        "className": "m-b-sm pull-right",
+                                        "icon": "fa fa-plus pull-left",
+                                        "dialog": {
+                                            "size": "xl",
+                                            "title": "新建一条数据",
+                                            "body": {
+                                                "type": "form",
+                                                "api": "post:${host}/admin/mock/",
+                                                "controls": [
+                                                    {
+                                                        "type": "text",
+                                                        "name": "path",
+                                                        "label": "接口"
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "name": "header",
+                                                        "label": "header",
+                                                        "items": {
+                                                            "type": "text"
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "name": "query",
+                                                        "label": "query",
+                                                        "items": {
+                                                            "type": "text"
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "array",
+                                                        "name": "body",
+                                                        "label": "body",
+                                                        "items": {
+                                                            "type": "text"
+                                                        }
+                                                    },
+                                                ],
+                                            }
+                                        }
+                                    },
+                                ]
+                            },
+                            // 表格列表
+                            "columns": [
+                                {
+                                    "name": "path",
+                                    "label": "接口"
+                                },
+                                {
+                                    "name": "info",
+                                    "label": "说明"
+                                },
+                                {
+                                    "name": "header",
+                                    "label": "header",
+                                },
+                                {
+                                    "name": "query",
+                                    "label": "query"
+                                },
+                                {
+                                    "name": "body",
+                                    "label": "body"
+                                },
+                                {
+                                    "type": "operation",
+                                    "label": "操作",
+                                    "width": 200,
+                                    "buttons": [
+                                        {
+                                            "label": "编辑",
+                                            "type": "button",
+                                            "actionType": "dialog",
+                                            "level": "success",
+                                            "className": "m-b-sm pull-right",
+                                            "icon": "fa fa-edit pull-left",
+                                            "dialog": {
+                                                "size": "xl",
+                                                "title": "",
+                                                "body": {
+                                                    "type": "form",
+                                                    "api": "post:${host}/admin/mock/",
+                                                    "controls": [
+                                                        {
+                                                            "type": "text",
+                                                            "name": "path",
+                                                            "label": "接口"
+                                                        },
+                                                        {
+                                                            "type": "text",
+                                                            "name": "info",
+                                                            "label": "说明"
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "name": "header",
+                                                            "label": "header",
+                                                            "items": {
+                                                                "type": "text"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "name": "query",
+                                                            "label": "query",
+                                                            "items": {
+                                                                "type": "text"
+                                                            }
+                                                        },
+                                                        {
+                                                            "type": "array",
+                                                            "name": "body",
+                                                            "label": "body",
+                                                            "items": {
+                                                                "type": "text"
+                                                            }
+                                                        },
+                                                        {
+                                                            "name": "switch",
+                                                            "type": "switch",
+                                                            "label": "开关",
+                                                            "option": "是否启动mock"
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "button",
+                                            "label": "数据",
+                                            "level": "secondary",
+                                            "className": "m-b-sm pull-right",
+                                            "icon": "fa fa-table pull-left",
+                                            "actionType": "link",
+                                            "link": "/static/mocks.html?path=${path}"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            );
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>mock管理</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link rel="stylesheet" href="sdk\sdk.css" />
+    <style>
+        html,
+        body,
+        .app-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root" class="app-wrapper"></div>
+    <script src="sdk\sdk.js"></script>
+    <script type="text/javascript">
+        (function () {
+            let amis = amisRequire('amis/embed');
+            // mock数据管理页面
+            let amisScoped = amis.embed('#root',
+                {
+                    "type": "page",
+                    "toolbar": [
+                    ],
+                    "body": [
+                        // 导航栏
+                        {
+                            "type": "nav",
+                            "stacked": false,
+                            "links": [
+                                {
+                                    "label": "接口配置",
+                                    "to": "/static/index.html",
+                                    "icon": "fa fa-home"
+                                },
+                                {
+                                    "label": "Mock数据配置",
+                                    "to": "/static/mocks.html",
+                                    "icon": "fa fa-table",
+                                },
+                                {
+                                    "label": "Replay数据配置",
+                                    "to": "/static/replay.html",
+                                    "icon": "fa fa-recycle",
+                                    "active": true
+                                },
+                                {
+                                    "label": "Log数据",
+                                    "to": "http://localhost:3000",
+                                    "icon": "fa fa-file"
+                                },
+                            ]
+                        },
+
+                        {
+                            "type": "crud",
+                            "api": "/admin/replay?path=${path}",
+                            "quickSaveItemApi": "post:/admin/mock/${path}?id=${id}",
+                            "name": "sheet",
+                            // 控制面板
+                            "filter": {
+                                "title": "回放数据管理",
+                                "submitText": "",
+                                "controls": [
+                                    {
+                                        "type": "text",
+                                        "name": "path",
+                                        "placeholder": "接口路径,支持从头匹配"
+                                    },
+                                    {
+                                        "label": "搜索",
+                                        "type": "button",
+                                        "level": "light",
+                                        "actionType": "submit",
+                                        "className": "m-b-sm",
+                                        "icon": "fa fa-search pull-left",
+                                    },
+                                ]
+                            },
+                            // 表格列表
+                            "columns": [
+                                {
+                                    "name": "trace_id",
+                                    "width": 250,
+                                    "label": "trace_id"
+                                },
+                                {
+                                    "name": "info",
+                                    "label": "说明"
+                                },
+                                {
+                                    "name": "path",
+                                    "label": "path",
+                                },
+                                {
+                                    "name": "resp",
+                                    "label": "response",
+                                    "type": "json",
+                                    "jsonTheme": "eighties",
+                                },
+                                // 修改
+                                {
+                                    "type": "operation",
+                                    "label": "操作",
+                                    "width": 200,
+                                    "buttons": [
+                                        {
+                                            "label": "编辑",
+                                            "type": "button",
+                                            "actionType": "dialog",
+                                            "level": "success",
+                                            "className": "m-b-sm pull-left",
+                                            "icon": "fa fa-edit pull-left",
+                                            "dialog": {
+                                                "size": "xl",
+                                                "title": "",
+                                                "body": {
+                                                    "type": "form",
+                                                    "api": "post:/admin/replay",
+                                                    "controls": [
+                                                        {
+                                                            "name": "trace_id",
+                                                            "type": "text",
+                                                            "label": "trace_id"
+                                                        },
+                                                        {
+                                                            "name": "path",
+                                                            "type": "text",
+                                                            "label": "path"
+                                                        },
+                                                        {
+                                                            "name": "resp",
+                                                            "type": "editor",
+                                                            "language": "json",
+                                                            "label": "RESPONSE",
+                                                        },
+                                                    ]
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "button",
+                                            "label": "删除",
+                                            "level": "danger",
+                                            "icon": "fa fa-trash pull-left",
+                                            "actionType": "ajax",
+                                            "tooltip": "删除",
+                                            "confirmText": "您确认要删除?",
+                                            "api": "delete:/admin/replay?path=${path}?id=${id}",
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+
+                        {
+                            "type": "crud",
+                            "api": "/admin/loki?trace_id=${trace_id}",
+                            "name": "loki_data",
+                            // 控制面板
+                            "filter": {
+                                "title": "查询日志",
+                                "submitText": "",
+                                "controls": [
+                                    {
+                                        "type": "text",
+                                        "name": "trace_id",
+                                        "placeholder": "输入trace_id进行搜索"
+                                    },
+                                    {
+                                        "label": "搜索",
+                                        "type": "button",
+                                        "level": "light",
+                                        "actionType": "submit",
+                                        "className": "m-b-sm",
+                                        "icon": "fa fa-search pull-left",
+                                    },
+                                ]
+                            },
+                            // 表格列表
+                            "columns": [
+                                {
+                                    "name": "trace_id",
+                                    "width": 250,
+                                    "label": "id"
+                                },
+                                {
+                                    "name": "uri",
+                                    "label": "path",
+                                },
+                                {
+                                    "name": "response",
+                                    "label": "response",
+                                    "type": "json",
+                                    "jsonTheme": "eighties",
+                                },
+                                // 修改
+                                {
+                                    "type": "operation",
+                                    "label": "操作",
+                                    "width": 200,
+                                    "buttons": [
+                                        {
+                                            "label": "编辑",
+                                            "type": "button",
+                                            "actionType": "dialog",
+                                            "level": "success",
+                                            "className": "m-b-sm pull-left",
+                                            "icon": "fa fa-edit pull-left",
+                                            "dialog": {
+                                                "size": "xl",
+                                                "title": "",
+                                                "body": {
+                                                    "type": "form",
+                                                    "api": "post:/admin/replay",
+                                                    "controls": [
+                                                        {
+                                                            "name": "path",
+                                                            "type": "text",
+                                                            "label": "path",
+                                                        },
+                                                        {
+                                                            "name": "trace_id",
+                                                            "type": "text",
+                                                            "label": "trace_id",
+                                                        },
+                                                        {
+                                                            "name": "response",
+                                                            "type": "editor",
+                                                            "language": "json",
+                                                            "label": "RESPONSE",
+                                                        },
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            );
+        })();
+    </script>
+</body>
+
+</html>

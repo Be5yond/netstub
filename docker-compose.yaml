@@ -1,0 +1,72 @@
+version: "3.9"
+
+volumes:
+  ngx_log:
+
+networks:
+  loki:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.22.0.0/24"
+          gateway: 172.22.0.1
+
+services:
+  loki:
+    image: grafana/loki:2.3.0
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      loki:
+        ipv4_address: 172.22.0.2
+
+  promtail:
+    image: grafana/promtail:2.3.0
+    volumes:
+      - ngx_log:/var/log
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      loki:
+        ipv4_address: 172.22.0.3
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      loki:
+        ipv4_address: 172.22.0.4
+
+  resty:
+    image: beyond147896/resty:latest
+    volumes:
+      - ngx_log:/var/log/nginx
+      - $PWD/conf.d:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      loki:
+        ipv4_address: 172.22.0.5
+
+  redis:
+    image: redis:latest
+    volumes:
+      - $PWD/redis:/data
+    ports:
+      - "6379:6379"
+    networks:
+      loki:
+        ipv4_address: 172.22.0.99
+
+  coredns:
+    image: coredns/coredns:1.8.6
+    volumes:
+      - $PWD/coredns:/etc/coredns
+    ports:
+      - "53:53/udp"
+    networks:
+      loki:
+        ipv4_address: 172.22.0.6
+    command: -conf /etc/coredns/Corefile

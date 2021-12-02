@@ -1,0 +1,5 @@
+.:53 {
+    hosts /etc/coredns/hosts
+    log
+    forward . 202.106.0.20:53
+}
