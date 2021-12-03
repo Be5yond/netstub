@@ -44,13 +44,14 @@ if res=='1' then
 elseif res=='2' then
     local query = ngx.req.get_uri_args()
     local trace_id = query.trace_id
-    local key = 'replay:'..path..':'..trace_id
-
-    local res, err = rds:get(key)
-    if res ~= ngx.null then
-        ngx.header['X-replay'] = trace_id
-        ngx.say(res)
-        return
+    if trace_id then
+        local key = 'replay:'..path..':'..trace_id
+        local res, err = rds:get(key)
+        if res ~= ngx.null then
+            ngx.header['X-replay'] = trace_id
+            ngx.say(res)
+            return
+        end
     end
 end
 
