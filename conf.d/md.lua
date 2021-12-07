@@ -33,7 +33,7 @@ local path = ngx.var.uri
 
 -- 获取trace_id
 function get_trace_id()
-    local key = 'rep_cfg2'
+    local key = 'config:trace_id'
     local res, err = rds:hmget(key, 'header', 'query', 'body')
     -- trace_id在header中
     if res[1] ~= ngx.null then
@@ -78,7 +78,7 @@ end
 
 -- 【mock】
 -- 查询对应path的mock配置信息
-local res, err = rds:hget('config', path)
+local res, err = rds:hget('config:mock', path)
 -- 接口启用mock
 if res ~= ngx.null then
     -- 找到匹配mock数据fields

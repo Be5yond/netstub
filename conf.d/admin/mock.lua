@@ -49,7 +49,7 @@ if ngx.var.uri == '/admin/mock/' then
         local body = json.decode(ngx.req.get_body_data())
         local path = body.path
         body.path = nil
-        local ok = rds:hset('config', path, json.encode(body))
+        local ok = rds:hset('config:mock', path, json.encode(body))
         if not ok then
             ngx.say("failed to record: ", err)
         end
