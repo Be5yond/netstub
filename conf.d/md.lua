@@ -31,31 +31,52 @@ end
 
 local path = ngx.var.uri
 
--- 查询对应path的replay配置信息
-local res, err = rds:hget('replay_config', path)
---  接口启用replay, 当前为录制状态
-if res=='1' then
-    local query = ngx.req.get_uri_args()
-    local trace_id = query.trace_id
-    -- 标记当前请求需要被存储
-    local key = 'replay:'..path..':'..trace_id
-    ngx.header['X-record-key'] = key
---  接口启用replay, 当前为回放状态
-elseif res=='2' then
-    local query = ngx.req.get_uri_args()
-    local trace_id = query.trace_id
-    if trace_id then
-        local key = 'replay:'..path..':'..trace_id
-        local res, err = rds:get(key)
-        if res ~= ngx.null then
-            ngx.header['X-replay'] = trace_id
-            ngx.say(res)
-            return
+-- 获取trace_id
+function get_trace_id()
+    local key = 'rep_cfg2'
+    local res, err = rds:hmget(key, 'header', 'query', 'body')
+    -- trace_id在header中
+    if res[1] ~= ngx.null then
+        local trace_id = ngx.req.get_headers()[res[1]]
+        if trace_id then
+            return trace_id
+        end
+    end
+    -- trace_id在query中
+    if res[2] ~= ngx.null then
+        local trace_id = ngx.req.get_uri_args()[res[2]]
+        if trace_id then
+            return trace_id
+        end
+    end
+    -- trace_id在body中
+    if res[3] ~= ngx.null then
+        local body = json.decode(ngx.req.get_body_data() or '{}')
+        local trace_id = jmespath.search(res[3], body)
+        if trace_id then
+            return trace_id
         end
     end
 end
 
+-- 【replay】
+-- 获取trace_id
+local trace_id = get_trace_id()
+ngx.log(ngx.ERR, '===========================================')
+ngx.log(ngx.ERR, 'TRACE_ID=: ', trace_id)
+-- 查找回放数据
+if trace_id then
+    local key = 'replay:'..path..':'..trace_id
+    local res, err = rds:get(key)
+    if res ~= ngx.null then
+        ngx.header['X-replay'] = trace_id
+        ngx.say(res)
+        return
+    end
+end
 
+
+-- 【mock】
 -- 查询对应path的mock配置信息
 local res, err = rds:hget('config', path)
 -- 接口启用mock

@@ -33,7 +33,7 @@ local method = ngx.req.get_method()
 if ngx.var.uri == '/admin/mock/' then
     -- 返回mock的path列表
     if method == 'GET' then
-        local res, err = rds:hgetall('config')
+        local res, err = rds:hgetall('config:mock')
         ret = {}
         -- 处理config中的所有数据放到table中
         for i=1, #res, 2 do
