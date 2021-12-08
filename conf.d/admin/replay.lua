@@ -46,8 +46,16 @@ if method == 'GET' then
 elseif method == 'POST' then
     local body = json.decode(ngx.req.get_body_data())
     local key = 'replay:'..body.path..':'..body.trace_id
-    local ok, err = rds:set(key, body.resp)
+    local ok, err = rds:set(key, body.response)
     ngx.say(key)
+    return
+-- 删除replay数据
+elseif method == 'DELETE' then
+    local path = ngx.req.get_uri_args()['path']
+    local trace_id = ngx.req.get_uri_args()['trace_id']
+    local key = 'replay:'..path..':'..trace_id
+    local ok = rds:del(key)
+    ngx.say(response(key))
     return
 end
 
