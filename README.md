@@ -14,12 +14,16 @@
 
 # Quick Start
 1. git clone https://github.com/Be5yond/netstub.git   
-2. 修改hosts文件将要mock的服务域名改为netstub设备的ip, 如：192.168.2.20
+2. 修改coredns/hosts文件将要mock的服务域名改为netstub设备的ip, 如：192.168.2.20
 ```
 192.168.2.20 httpbin.org
+192.168.2.20 www.zhihu.com
+192.168.2.20 www.baidu.com
 ```
 3. 配置mock数据
-进入管理界面192.168.2.20/static/index.html    
+修改本地电脑hosts文件,以便进入管理页面。
+192.168.2.20 www.netstub.com
+进入管理界面http://www.netstub.com/static/index.html    
 ①  配置mock规则：对于/get的api, query中的page字段，参与数据计算   
 ![mock_rule.png](https://raw.githubusercontent.com/Be5yond/netstub/main/imgs/config_rule.png)
 ② 配置mock数据, page=1时，返回{"page": 1}   
