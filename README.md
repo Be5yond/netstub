@@ -1,12 +1,13 @@
 # netstub
-网络桩工具
+基于openresty实现的网络桩工具
 
 # Feature
 - 请求的mock和回放
   - 基于规则的mock,同一api可配置多条mock数据
   - 基于trace_id的回放,将特定请求录制再次请求时返回确定的值
 - 环境逻辑复用
-- 日志的预处理与持久化
+- 日志的定制化与预处理
+- 日志数据汇总与持久化以便数据分析
 
 # Requirments
 - Docker
@@ -20,9 +21,9 @@
 192.168.2.20 www.zhihu.com
 192.168.2.20 www.baidu.com
 ```
-3. 配置mock数据
-修改本地电脑hosts文件,以便进入管理页面。
-192.168.2.20 www.netstub.com
+3. 配置mock数据   
+修改本地电脑hosts文件,以便进入管理页面。   
+192.168.2.20 www.netstub.com   
 进入管理界面http://www.netstub.com/static/index.html    
 ①  配置mock规则：对于/get的api, query中的page字段，参与数据计算   
 ![mock_rule.png](https://raw.githubusercontent.com/Be5yond/netstub/main/imgs/config_rule.png)
