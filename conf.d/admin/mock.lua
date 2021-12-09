@@ -25,6 +25,7 @@ end
 
 function response(data)
     local resp = {status=0, message="ok", data=data}
+    json.encode_empty_table_as_object(false)
     return json.encode(resp)
 end
 
