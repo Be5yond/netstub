@@ -110,10 +110,14 @@ if res ~= ngx.null then
 
     local hex = ngx.md5(table.concat(tab))
     -- 查找对应md5配置了mock数据，且数据状态为有效
-    local res, err = rds:hmget('mock:'..path..':'..hex, 'switch', 'resp')
+    local res, err = rds:hmget('mock:'..path..':'..hex, 'switch', 'delay', 'resp')
     if res ~= ngx.null and res[1]=='true' then
         ngx.header['X-mock'] = hex
-        ngx.say(res[2])
+        -- 配置了delay, 则delay相应秒数返回
+        if res[2] ~= ngx.null then
+            ngx.sleep(res[2])
+        end
+        ngx.say(res[3])
         return
     -- else
     --     ngx.say('mock:'..path..hex)

@@ -114,6 +114,12 @@
                                                         "value": true
                                                     },
                                                     {
+                                                        "name": "delay",
+                                                        "type": "text",
+                                                        "label": "delay(单位S)",
+                                                        "value": 0
+                                                    },
+                                                    {
                                                         "name": "data",
                                                         "type": "json-editor",
                                                         "language": "json",
@@ -158,6 +164,10 @@
                                     }
                                 },
                                 {
+                                    "name": "delay",
+                                    "label": "delay"
+                                },
+                                {
                                     "name": "data",
                                     "label": "data",
                                     "type": "json",
@@ -200,6 +210,14 @@
                                                             "label": "开关",
                                                             "trueValue": "true",
                                                             "option": "数据是否生效",
+                                                        },
+                                                        {
+                                                            "name": "delay",
+                                                            "type": "input-number",
+                                                            "precision": 2,
+                                                            "step": 0.1,
+                                                            "min": 0,
+                                                            "label": "delay(单位S)",
                                                         },
                                                         {
                                                             "name": "data",

@@ -83,7 +83,7 @@ else
         ngx.say(key)
         -- local ok = rds:hset(key, 'data', body.data)
         -- local ok = rds:hset(key, 'resp', body.resp)
-        local ok, err = rds:hmset(key, 'data', body.data, 'resp', body.resp, 'switch', body.switch, 'info', body.info)
+        local ok, err = rds:hmset(key, 'data', body.data, 'resp', body.resp, 'switch', body.switch, 'info', body.info, 'delay', body.delay)
         ngx.say(ok, err)
         ngx.say(response(type(body.switch)))
         return
