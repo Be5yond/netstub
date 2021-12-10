@@ -32,9 +32,7 @@
                 {
                     "type": "page",
                     "toolbar": [
-                    ],
-                    "body": [
-                        // 导航栏
+                        // 导航栏目
                         {
                             "type": "nav",
                             "stacked": false,
@@ -62,19 +60,69 @@
                                 },
                             ]
                         },
-
+                    ],
+                    "body": [
                         {
                             "type": "crud",
-                            "api": "${host}/admin/mock/",
+                            "api": "${host}/admin/mock/path?chained=$chained&text=$text",
                             "name": "sheet",
                             // 控制面板
                             "filter": {
                                 "title": "筛选",
                                 "submitText": "",
                                 "controls": [
+                                    // 域名button
+                                    {
+                                        "label": "",
+                                        "type": "button",
+                                        "actionType": "dialog",
+                                        "level": "defalt",
+                                        "className": "m-b-xs pull-left",
+                                        "icon": "fa fa-plus pull-left",
+                                        "dialog": {
+                                            "size": "xl",
+                                            "title": "新增一个域名",
+                                            "body": {
+                                                "type": "form",
+                                                "api": "post:$host/admin/mock/domain",
+                                                "controls": [
+                                                    {
+                                                        "type": "group",
+                                                        "gap": "xs",
+                                                        "body": [
+                                                            {
+                                                                "name": "group",
+                                                                "type": "input-text",
+                                                                "label": "分组",
+                                                                "source": "/admin/mock/domain?level=",
+                                                                "value": "",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "name": "domain",
+                                                                "type": "input-text",
+                                                                "label": "域名",
+                                                                "source": "/admin/mock/domain?parentId=$group&level=1",
+                                                                "value": "",
+                                                                "required": true
+                                                            }
+                                                        ]
+                                                    },
+                                                ],
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "chained",
+                                        "type": "chained-select",
+                                        "label": "分组",
+                                        "source": "/admin/mock/domain?parentId=$parentId&level=$level&maxLevel=1",
+                                        "value": ""
+                                    },
                                     {
                                         "type": "text",
                                         "name": "path",
+                                        "value": "/",
                                         "placeholder": "接口路径,支持从头匹配"
                                     },
                                     {
@@ -97,8 +145,16 @@
                                             "title": "新建一条数据",
                                             "body": {
                                                 "type": "form",
-                                                "api": "post:${host}/admin/mock/",
+                                                "api": "post:${host}/admin/mock/path",
                                                 "controls": [
+                                                    {
+                                                        "name": "chained",
+                                                        "type": "chained-select",
+                                                        "label": "分组",
+                                                        "source": "/admin/mock/domain?parentId=$parentId&level=$level&maxLevel=1",
+                                                        "value": "",
+                                                        "required": true
+                                                    },
                                                     {
                                                         "type": "text",
                                                         "name": "path",
@@ -173,8 +229,15 @@
                                                 "title": "",
                                                 "body": {
                                                     "type": "form",
-                                                    "api": "post:${host}/admin/mock/",
+                                                    "api": "post:${host}/admin/mock/path",
                                                     "controls": [
+                                                        {
+                                                            "name": "chained",
+                                                            "type": "chained-select",
+                                                            "label": "分组",
+                                                            "source": "/admin/mock/domain?parentId=$parentId&level=$level&maxLevel=1",
+                                                            "value": ""
+                                                        },
                                                         {
                                                             "type": "text",
                                                             "name": "path",
