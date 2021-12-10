@@ -44,7 +44,7 @@ function json_decode( str )
 end
 
 function get_path_config(keys)
-    -- 根据输入的redis key查找接口mock配置
+    -- 根据输入的redis key查找接口mock配置, index页配置列表使用
     local list = {}
     for idx, key in pairs(keys) do
         local paths, err = rds:smembers(key)
@@ -58,33 +58,40 @@ function get_path_config(keys)
                 end
             end
         end
-        -- local res, err = rds:hgetall(key)
-        -- -- 处理config中的所有数据放到table中
-        -- for i=1, #res, 2 do
-        --     data = json_decode(res[i+1])
-        --     if data then
-        --         data['path'] = res[i]
-        --         table.insert(list, data)
-        --     end
-        -- end
     end
     return list
 end
 
+function get_path_names(keys)
+    -- 返回配置了mock的接口名称列表, mock数据页查询接口名称
+    local list = {}
+    for idx, key in pairs(keys) do
+        local paths, err = rds:smembers(key)
+        for i, path in pairs(paths) do
+            table.insert(list, {label=path, value=path})
+        end
+    end
+    return list
+end
 
 local method = ngx.req.get_method()
--- 管理mock接口配置
+-- 管理mock接口配置信息
 if ngx.var.uri == '/admin/mock/path' then
     -- 返回mock的path列表
     if method == 'GET' then
-        local chained = ngx.req.get_uri_args()['chained']
+        local chained = ngx.req.get_uri_args()['chained'] or ''
         local text = ngx.req.get_uri_args()['text']
         local group, domain = string.gmatch(chained, '(%S+),(%S+)')()
         group = group or '*'
         domain = domain or '*'
         local keys, err = rds:keys('config:mock:'..group..':'..domain)
 
-        ret = get_path_config(keys)
+        local type = ngx.req.get_uri_args()['type']
+        if type == 'name' then
+            ret = get_path_names(keys)
+        else
+            ret = get_path_config(keys)
+        end
         ngx.say(response(ret))
         return
     -- 新增或者修改mock配置
