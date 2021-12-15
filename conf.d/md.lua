@@ -78,7 +78,9 @@ end
 
 -- 【mock】
 -- 查询对应path的mock配置信息
-local res, err = rds:hget('config:mock', path)
+local res, err = rds:hget('config:path:'..path, 'data')
+ngx.log(ngx.ERR, '===========================================')
+ngx.log(ngx.ERR, 'mock config data: ', res)
 -- 接口启用mock
 if res ~= ngx.null then
     -- 找到匹配mock数据fields
@@ -119,6 +121,19 @@ if res ~= ngx.null then
         end
         ngx.say(res[3])
         return
+    end
+
+    -- 查找接口配置了default mock数据，且数据状态为有效
+    local res, err = rds:hmget('config:path:'..path, 'switch', 'delay', 'resp')
+    if res ~= ngx.null and res[1]=='true' then
+        ngx.header['X-mock'] = "default"
+        -- 配置了delay, 则delay相应秒数返回
+        if res[2] ~= ngx.null then
+            ngx.sleep(res[2])
+        end
+        ngx.say(res[3])
+        return
+
     -- else
     --     ngx.say('mock:'..path..hex)
     end

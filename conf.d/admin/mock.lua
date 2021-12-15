@@ -52,17 +52,24 @@ function get_path_config(keys)
         local domain = string.gmatch(key, 'config:mock:%S+:(%S+)')()
         local paths, err = rds:smembers(key)
         for i, path in pairs(paths) do
-            local res, err = rds:hget('config:mock', path)
-            if res ~= ngx.null then
-                local data = json_decode(res)
-                if data then
-                    data['type'] = 'path'
-                    data['path'] = path
-                    data['domain'] = domain
-                    data['children'] = get_mock_data(path)
-                    table.insert(list, data)
-                end
+            local res, err = rds:hgetall('config:path:'..path)
+            item = { 
+                type = 'path', 
+                path = path, 
+                domain = domain, 
+                children = get_mock_data(path) 
+            }
+            -- 组织配置格式
+            for i=1, #res, 2 do
+                item[res[i]] = res[i+1]
             end
+            local data = json_decode(item['data'])
+            if data then
+                item['header'] = data.header
+                item['query'] = data.query
+                item['body'] = data.body
+            end
+            table.insert(list, item)
         end
     end
     return list
@@ -109,8 +116,24 @@ end
 
 
 local method = ngx.req.get_method()
+-- 快速编辑接口default数据状态
+if ngx.var.uri == '/admin/mock/path/quick' then
+    local body = json.decode(ngx.req.get_body_data())
+    local key = "config:path:"..body.path
+    local ok, err = rds:hset(key, 'switch', body.switch)
+    ngx.say(response(ok))
+    return
+
+-- 快速编辑mock数据接口状态
+elseif ngx.var.uri == '/admin/mock/data/quick' then
+    local body = json.decode(ngx.req.get_body_data())
+    local key = "mock:"..body.path..':'..body.domain  -- 前端数据id复用domain列
+    local ok, err = rds:hset(key, 'switch', body.switch)
+    ngx.say(response(ok))
+    return
+
 -- 管理mock接口配置信息
-if ngx.var.uri == '/admin/mock/path' then
+elseif ngx.var.uri == '/admin/mock/path' then
     -- 返回mock的path列表
     if method == 'GET' then
         local chained = ngx.req.get_uri_args()['chained'] or ''
@@ -136,11 +159,28 @@ if ngx.var.uri == '/admin/mock/path' then
         body.chained = nil
         -- 添加path到域名下路径集合
         local ok, err = rds:sadd('config:mock:'..group..':'..domain, path)
-        body.path = nil
-        local ok, err = rds:hset('config:mock', path, json.encode(body))
+        -- local ok, err = rds:hset('config:mock', path, json.encode(body))
+        -- 添加config:path 配置
+        local data = {header=body.header, query=body.query, body=body.body}
+        local ok, err = rds:hmset('config:path:'..path, 
+            'data', json.encode(data), 
+            'resp', body.resp or '{}', 
+            'switch', body.switch or 'false', 
+            'info', body.info or '', 
+            'delay', body.delay or 0)
         if not ok then
             ngx.say("failed to record: ", err)
         end
+    -- 删除mock path配置
+    elseif method == 'DELETE' then
+        local path = ngx.req.get_uri_args()['path']
+        local domain = ngx.req.get_uri_args()['id']
+        local key = 'mock:path:'..path
+        local ok, err = rds:del(key)
+        local domkey = rds:keys('config:mock:*:'..domain)[1] -- 获取domain path集合对应的key
+        local ok, err = rds:srem(domkey, path)
+        ngx.say(response(key))
+        return
     end
 
 -- 管理服务的分组与域名
@@ -185,7 +225,6 @@ elseif ngx.var.uri == '/admin/mock/domain' then
 
 -- 管理mock数据
 elseif ngx.var.uri == '/admin/mock/data' then
-    -- local path = string.sub(ngx.var.uri, 12) -- uri为/static/mock/...  从12个字符之后的字符串为实际的path
     local path = ngx.req.get_uri_args()['path']
     -- 返回对应path的mock数据列表
     if method == 'GET' then
@@ -194,9 +233,8 @@ elseif ngx.var.uri == '/admin/mock/data' then
         for k, v in pairs(res) do
             local res, err = rds:hgetall(v)
             data = { id = string.sub(v, -32) }
-            -- 组织配置格式
+            -- 组织配置格式,将列表转换成k-v格式的table 
             for i=1, #res, 2 do
-                -- data[res[i]] = json.decode(res[i+1])
                 data[res[i]] = res[i+1]
             end
             table.insert(ret, data)
@@ -207,38 +245,33 @@ elseif ngx.var.uri == '/admin/mock/data' then
     elseif method == 'POST' then
         local type = ngx.req.get_uri_args()['type']
         local body = json.decode(ngx.req.get_body_data())
-        -- 域名行快捷编辑，修改域名下所有数据的switch  TODO
-        if type == 'path' then
-            ngx.say(response('TBD'))
-            return
-        end
         -- local hash = ngx.md5(table.concat(json.decode(body.data)))
         -- 计算数据md5
         local tab = {}
         -- 拼接header数据
-        local header = body.header or {}
-        for k, v in pairs(header) do
+        for k, v in pairs(body.header or {}) do
             table.insert(tab, v)
         end
         -- 拼接query数据
-        local query = body.query or {}
-        for k, v in pairs(query) do
+        for k, v in pairs(body.query or {}) do
             table.insert(tab, v)
         end
         -- 拼接body数据
-        local mbody = body.body or {}
-        for k, v in pairs(mbody) do
+        for k, v in pairs(body.body or {}) do
             table.insert(tab, v)
         end
         local hash = ngx.md5(table.concat(tab))
         local key = 'mock:'..body.path..':'..hash
-        local data = {header=header, query=query, body=mbody}
-        -- local ok, err = rds:hmset(key, 'header', 'header', 'query', 'query', 'body', 'mbody', 'resp', body.resp, 'switch', body.switch, 'info', body.info, 'delay', body.delay)
-        local ok, err = rds:hmset(key, 'data', json.encode(data), 'resp', body.resp, 'switch', body.switch, 'info', body.info, 'delay', body.delay)
+        local data = {header=body.header, query=body.query, body=body.body}
+        local ok, err = rds:hmset(key, 
+            'data', json.encode(data), 
+            'resp', body.resp, 
+            'switch', body.switch, 
+            'info', body.info, 
+            'delay', body.delay)
 
         ngx.say(response(err))
         return
-
     -- 删除mock数据配置
     elseif method == 'DELETE' then
         local hash = ngx.req.get_uri_args()['id']

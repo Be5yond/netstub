@@ -65,7 +65,7 @@
                         {
                             "type": "crud",
                             "api": "${host}/admin/mock/path?chained=$chained&text=$text",
-                            "quickSaveItemApi": "post:/admin/mock/$type?path=$path&id=$domain", // id复用列表中domain列, type=data编辑数据，type=path编辑接口
+                            "quickSaveItemApi": "post:/admin/mock/$type/quick?path=$path&id=$domain", // id复用列表中domain列, type=data编辑数据，type=path编辑接口
                             "name": "sheet",
                             "headerToolbar": [
                                 {
@@ -193,6 +193,26 @@
                                                     "items": {
                                                         "type": "text"
                                                     }
+                                                },
+                                                {
+                                                    "name": "resp",
+                                                    "type": "editor",
+                                                    "language": "json",
+                                                    "label": "RESPONSE",
+                                                    "value": {}
+                                                },
+                                                {
+                                                    "name": "switch",
+                                                    "type": "switch",
+                                                    "label": "开关",
+                                                    "option": "数据是否生效",
+                                                    "value": true
+                                                },
+                                                {
+                                                    "name": "delay",
+                                                    "type": "text",
+                                                    "label": "delay(单位S)",
+                                                    "value": 0
                                                 },
                                             ],
                                         }
@@ -330,7 +350,7 @@
                                             "actionType": "ajax",
                                             "tooltip": "删除",
                                             "confirmText": "您确认要删除?",
-                                            "api": "delete:/admin/mock/$type?path=$path&id=$domain", //type=data数据，type=path接口
+                                            "api": "delete:/admin/mock/$type?path=$path&id=$domain", //type=data数据，type=path接口, id为domain列数据
                                         },
                                         {
                                             "label": "编辑",
@@ -349,6 +369,7 @@
                                                         {
                                                             "type": "text",
                                                             "name": "type",
+                                                            "disabled": true,
                                                             "label": "类型"
                                                         },
                                                         {
