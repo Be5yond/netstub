@@ -65,7 +65,140 @@
                         {
                             "type": "crud",
                             "api": "${host}/admin/mock/path?chained=$chained&text=$text",
+                            "quickSaveItemApi": "post:/admin/mock/$type?path=$path&id=$domain", // id复用列表中domain列, type=data编辑数据，type=path编辑接口
                             "name": "sheet",
+                            "headerToolbar": [
+                                {
+                                    "label": "新增数据",
+                                    "type": "button",
+                                    "actionType": "dialog",
+                                    "level": "secondary",
+                                    "className": "m-b-sm pull-right",
+                                    "icon": "fa fa-plus pull-left",
+                                    "dialog": {
+                                        "size": "xl",
+                                        "title": "新建一条mock数据",
+                                        "body": {
+                                            "type": "form",
+                                            "api": "post:/admin/mock/data?path=$path",
+                                            "controls": [
+                                                {
+                                                    "name": "path",
+                                                    "type": "input-text",
+                                                    "placeholder": "接口路径",
+                                                    "source": "/admin/mock/path?type=name",
+                                                    "value": "/",
+                                                },
+                                                {
+                                                    "type": "text",
+                                                    "name": "info",
+                                                    "label": "说明",
+                                                    "value": ""
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "name": "header",
+                                                    "label": "header",
+                                                    "items": {
+                                                        "type": "text"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "name": "query",
+                                                    "label": "query",
+                                                    "items": {
+                                                        "type": "text"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "name": "body",
+                                                    "label": "body",
+                                                    "items": {
+                                                        "type": "text"
+                                                    }
+                                                },
+                                                {
+                                                    "name": "resp",
+                                                    "type": "editor",
+                                                    "language": "json",
+                                                    "label": "RESPONSE",
+                                                    "value": {}
+                                                },
+                                                {
+                                                    "name": "switch",
+                                                    "type": "switch",
+                                                    "label": "开关",
+                                                    "option": "数据是否生效",
+                                                    "value": true
+                                                },
+                                                {
+                                                    "name": "delay",
+                                                    "type": "text",
+                                                    "label": "delay(单位S)",
+                                                    "value": 0
+                                                },
+                                            ],
+                                        }
+                                    }
+                                },
+                                {
+                                    "label": "新增接口",
+                                    "type": "button",
+                                    "actionType": "dialog",
+                                    "level": "primary",
+                                    "className": "m-b-sm pull-right",
+                                    "icon": "fa fa-plus pull-left",
+                                    "dialog": {
+                                        "size": "xl",
+                                        "title": "新建一个接口",
+                                        "body": {
+                                            "type": "form",
+                                            "api": "post:${host}/admin/mock/path",
+                                            "controls": [
+                                                {
+                                                    "name": "chained",
+                                                    "type": "chained-select",
+                                                    "label": "分组",
+                                                    "source": "/admin/mock/domain?parentId=$parentId&level=$level&maxLevel=1",
+                                                    "value": "",
+                                                    "required": true
+                                                },
+                                                {
+                                                    "type": "text",
+                                                    "name": "path",
+                                                    "label": "接口"
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "name": "header",
+                                                    "label": "header",
+                                                    "items": {
+                                                        "type": "text"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "name": "query",
+                                                    "label": "query",
+                                                    "items": {
+                                                        "type": "text"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "array",
+                                                    "name": "body",
+                                                    "label": "body",
+                                                    "items": {
+                                                        "type": "text"
+                                                    }
+                                                },
+                                            ],
+                                        }
+                                    }
+                                },
+                            ],
                             // 控制面板
                             "filter": {
                                 "title": "筛选",
@@ -133,65 +266,14 @@
                                         "className": "m-b-sm",
                                         "icon": "fa fa-search pull-left",
                                     },
-                                    {
-                                        "label": "新增",
-                                        "type": "button",
-                                        "actionType": "dialog",
-                                        "level": "primary",
-                                        "className": "m-b-sm pull-right",
-                                        "icon": "fa fa-plus pull-left",
-                                        "dialog": {
-                                            "size": "xl",
-                                            "title": "新建一条数据",
-                                            "body": {
-                                                "type": "form",
-                                                "api": "post:${host}/admin/mock/path",
-                                                "controls": [
-                                                    {
-                                                        "name": "chained",
-                                                        "type": "chained-select",
-                                                        "label": "分组",
-                                                        "source": "/admin/mock/domain?parentId=$parentId&level=$level&maxLevel=1",
-                                                        "value": "",
-                                                        "required": true
-                                                    },
-                                                    {
-                                                        "type": "text",
-                                                        "name": "path",
-                                                        "label": "接口"
-                                                    },
-                                                    {
-                                                        "type": "array",
-                                                        "name": "header",
-                                                        "label": "header",
-                                                        "items": {
-                                                            "type": "text"
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "array",
-                                                        "name": "query",
-                                                        "label": "query",
-                                                        "items": {
-                                                            "type": "text"
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "array",
-                                                        "name": "body",
-                                                        "label": "body",
-                                                        "items": {
-                                                            "type": "text"
-                                                        }
-                                                    },
-                                                ],
-                                            }
-                                        }
-                                    },
                                 ]
                             },
                             // 表格列表
                             "columns": [
+                                {
+                                    "name": "domain",
+                                    "label": "域名"
+                                },
                                 {
                                     "name": "path",
                                     "label": "接口"
@@ -213,10 +295,43 @@
                                     "label": "body"
                                 },
                                 {
+                                    "name": "resp",
+                                    "label": "response",
+                                    "type": "json",
+                                    "jsonTheme": "eighties",
+                                },
+                                {
+                                    "name": "switch",
+                                    "width": 80,
+                                    "type": "switch",
+                                    "label": "开关",
+                                    "quickEdit": {
+                                        "mode": "inline",
+                                        "type": "switch",
+                                        "trueValue": "true",
+                                        "saveImmediately": true
+                                    }
+                                },
+                                {
+                                    "name": "delay",
+                                    "label": "delay"
+                                },
+                                {
                                     "type": "operation",
                                     "label": "操作",
                                     "width": 200,
                                     "buttons": [
+                                        {
+                                            "type": "button",
+                                            "label": "删除",
+                                            "level": "danger",
+                                            "icon": "fa fa-trash pull-left",
+                                            "className": "m-b-sm pull-right",
+                                            "actionType": "ajax",
+                                            "tooltip": "删除",
+                                            "confirmText": "您确认要删除?",
+                                            "api": "delete:/admin/mock/$type?path=$path&id=$domain", //type=data数据，type=path接口
+                                        },
                                         {
                                             "label": "编辑",
                                             "type": "button",
@@ -229,14 +344,20 @@
                                                 "title": "",
                                                 "body": {
                                                     "type": "form",
-                                                    "api": "post:${host}/admin/mock/path",
+                                                    "api": "post:${host}/admin/mock/$type", //type=data编辑数据，type=path编辑接口
                                                     "controls": [
+                                                        {
+                                                            "type": "text",
+                                                            "name": "type",
+                                                            "label": "类型"
+                                                        },
                                                         {
                                                             "name": "chained",
                                                             "type": "chained-select",
                                                             "label": "分组",
                                                             "source": "/admin/mock/domain?parentId=$parentId&level=$level&maxLevel=1",
-                                                            "value": ""
+                                                            "value": "",
+                                                            "required": true
                                                         },
                                                         {
                                                             "type": "text",
@@ -273,24 +394,39 @@
                                                             }
                                                         },
                                                         {
+                                                            "name": "resp",
+                                                            "type": "editor",
+                                                            "language": "json",
+                                                            "label": "RESPONSE",
+                                                        },
+                                                        {
+                                                            "name": "delay",
+                                                            "type": "input-number",
+                                                            "precision": 2,
+                                                            "step": 0.1,
+                                                            "min": 0,
+                                                            "label": "delay(单位S)",
+                                                        },
+                                                        {
                                                             "name": "switch",
                                                             "type": "switch",
                                                             "label": "开关",
+                                                            "trueValue": "true",
                                                             "option": "是否启动mock"
                                                         }
                                                     ]
                                                 }
                                             }
                                         },
-                                        {
-                                            "type": "button",
-                                            "label": "数据",
-                                            "level": "secondary",
-                                            "className": "m-b-sm pull-right",
-                                            "icon": "fa fa-table pull-left",
-                                            "actionType": "link",
-                                            "link": "/static/mocks.html?path=${path}"
-                                        }
+                                        // {
+                                        //     "type": "button",
+                                        //     "label": "数据",
+                                        //     "level": "secondary",
+                                        //     "className": "m-b-sm pull-right",
+                                        //     "icon": "fa fa-table pull-left",
+                                        //     "actionType": "link",
+                                        //     "link": "/static/mocks.html?path=${path}"
+                                        // }
                                     ]
                                 }
                             ]

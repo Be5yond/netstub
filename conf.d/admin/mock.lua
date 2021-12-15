@@ -45,15 +45,21 @@ end
 
 function get_path_config(keys)
     -- 根据输入的redis key查找接口mock配置, index页配置列表使用
+    -- Args:
+    --     keys (table): 接口配置redis键列表， key格式 config:mock:{group}:{domain}  
     local list = {}
     for idx, key in pairs(keys) do
+        local domain = string.gmatch(key, 'config:mock:%S+:(%S+)')()
         local paths, err = rds:smembers(key)
         for i, path in pairs(paths) do
             local res, err = rds:hget('config:mock', path)
             if res ~= ngx.null then
-                data = json_decode(res)
+                local data = json_decode(res)
                 if data then
+                    data['type'] = 'path'
                     data['path'] = path
+                    data['domain'] = domain
+                    data['children'] = get_mock_data(path)
                     table.insert(list, data)
                 end
             end
@@ -62,8 +68,35 @@ function get_path_config(keys)
     return list
 end
 
+function get_mock_data(path)
+    -- 获取接口对应的mock数据
+    -- Args
+    --    path (str): 接口地址, 例如/test/mock
+    local res, err = rds:keys('mock:'..path..':*')
+    local ret = {}
+    for k, v in pairs(res) do
+        local res, err = rds:hgetall(v)
+        local item = { domain=string.sub(v, -32), type='data', path=path } -- 截取key，获取数据id, 因为前端列表和domain复用一列，所以key=domain
+        -- 组织配置格式
+        for i=1, #res, 2 do
+            -- data[res[i]] = json.decode(res[i+1])
+            item[res[i]] = res[i+1]
+        end
+        local data = json_decode(item['data'])
+        if data then
+            item['header'] = data.header
+            item['query'] = data.query
+            item['body'] = data.body
+        end
+        table.insert(ret, item)
+    end
+    return ret
+end
+
 function get_path_names(keys)
     -- 返回配置了mock的接口名称列表, mock数据页查询接口名称
+    -- Args
+    --    keys (table): 接口配置redis键列表， key格式 config:mock:{group}:{domain}
     local list = {}
     for idx, key in pairs(keys) do
         local paths, err = rds:smembers(key)
@@ -73,6 +106,7 @@ function get_path_names(keys)
     end
     return list
 end
+
 
 local method = ngx.req.get_method()
 -- 管理mock接口配置信息
@@ -94,12 +128,13 @@ if ngx.var.uri == '/admin/mock/path' then
         end
         ngx.say(response(ret))
         return
-    -- 新增或者修改mock配置
+    -- 新增或者修改mock path配置
     elseif method == 'POST' then
         local body = json.decode(ngx.req.get_body_data())
         local path = body.path
         local group, domain = string.gmatch(body.chained, '(%S+),(%S+)')()
         body.chained = nil
+        -- 添加path到域名下路径集合
         local ok, err = rds:sadd('config:mock:'..group..':'..domain, path)
         body.path = nil
         local ok, err = rds:hset('config:mock', path, json.encode(body))
@@ -170,20 +205,45 @@ elseif ngx.var.uri == '/admin/mock/data' then
         return
     -- 添加或修改mock数据配置
     elseif method == 'POST' then
+        local type = ngx.req.get_uri_args()['type']
         local body = json.decode(ngx.req.get_body_data())
-        local hash = ngx.md5(table.concat(json.decode(body.data)))
-        local key = 'mock:'..path..':'..hash
-        -- local ok = rds:hset(key, 'data', body.data)
-        -- local ok = rds:hset(key, 'resp', body.resp)
-        local ok, err = rds:hmset(key, 'data', body.data, 'resp', body.resp, 'switch', body.switch, 'info', body.info, 'delay', body.delay)
-        ngx.say(response(type(body.switch)))
+        -- 域名行快捷编辑，修改域名下所有数据的switch  TODO
+        if type == 'path' then
+            ngx.say(response('TBD'))
+            return
+        end
+        -- local hash = ngx.md5(table.concat(json.decode(body.data)))
+        -- 计算数据md5
+        local tab = {}
+        -- 拼接header数据
+        local header = body.header or {}
+        for k, v in pairs(header) do
+            table.insert(tab, v)
+        end
+        -- 拼接query数据
+        local query = body.query or {}
+        for k, v in pairs(query) do
+            table.insert(tab, v)
+        end
+        -- 拼接body数据
+        local mbody = body.body or {}
+        for k, v in pairs(mbody) do
+            table.insert(tab, v)
+        end
+        local hash = ngx.md5(table.concat(tab))
+        local key = 'mock:'..body.path..':'..hash
+        local data = {header=header, query=query, body=mbody}
+        -- local ok, err = rds:hmset(key, 'header', 'header', 'query', 'query', 'body', 'mbody', 'resp', body.resp, 'switch', body.switch, 'info', body.info, 'delay', body.delay)
+        local ok, err = rds:hmset(key, 'data', json.encode(data), 'resp', body.resp, 'switch', body.switch, 'info', body.info, 'delay', body.delay)
+
+        ngx.say(response(err))
         return
 
     -- 删除mock数据配置
     elseif method == 'DELETE' then
         local hash = ngx.req.get_uri_args()['id']
         local key = 'mock:'..path..':'..hash
-        local ok = rds:del(key)
+        local ok, err = rds:del(key)
         ngx.say(response(key))
         return
     end
