@@ -8,13 +8,7 @@
 
 local redis = require "resty.redis"
 local json = require "cjson"
-
-
-function response(data)
-    local resp = {status=0, message="ok", data=data}
-    json.encode_empty_table_as_object(false)
-    return json.encode(resp)
-end
+local utils = require "utils"
 
 
 local rds = redis:new()
@@ -41,7 +35,7 @@ if method == 'GET' then
         }
         table.insert(ret, data)
     end
-    ngx.say(response(ret))
+    ngx.say(utils.response(ret))
     return
 -- 添加数据到replay数据
 elseif method == 'POST' then
@@ -56,7 +50,7 @@ elseif method == 'DELETE' then
     local trace_id = ngx.req.get_uri_args()['trace_id']
     local key = 'replay:'..path..':'..trace_id
     local ok = rds:del(key)
-    ngx.say(response(key))
+    ngx.say(utils.response(key))
     return
 end
 

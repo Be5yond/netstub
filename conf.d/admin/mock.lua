@@ -11,9 +11,10 @@
 
 
 local redis = require "resty.redis"
-local json = require("cjson")
+local json = require "cjson" 
 local resty_md5  = require "resty.md5"
 local str = require "resty.string"
+local utils = require "utils"
 
 
 local rds = redis:new()
@@ -23,25 +24,6 @@ if not ok then
     return
 end
 
-
-function response(data)
-    local resp = {status=0, message="ok", data=data}
-    json.encode_empty_table_as_object(false)
-    return json.encode(resp)
-end
-
-local function _json_decode(str)
-    return json.decode(str)
-end
-
-
-function json_decode( str )
-    local ok, t = pcall(_json_decode, str)
-    if not ok then
-        return nil
-    end
-    return t
-end
 
 function get_path_config(keys, prefix)
     -- 根据输入的redis keys列表查找域名下mock接口列表, index页配置列表使用
@@ -73,7 +55,7 @@ function get_path_config(keys, prefix)
             for i=1, #res, 2 do
                 item[res[i]] = res[i+1]
             end
-            local data = json_decode(item['data'])
+            local data = utils.json_decode(item['data'])
             if data then
                 item['header'] = data.header
                 item['query'] = data.query
@@ -99,7 +81,7 @@ function get_mock_data(path)
             -- data[res[i]] = json.decode(res[i+1])
             item[res[i]] = res[i+1]
         end
-        local data = json_decode(item['data'])
+        local data = utils.json_decode(item['data'])
         if data then
             item['header'] = data.header
             item['query'] = data.query
@@ -131,7 +113,7 @@ if ngx.var.uri == '/admin/mock/path/quick' then
     local body = json.decode(ngx.req.get_body_data())
     local key = "config:path:"..body.path
     local ok, err = rds:hset(key, 'switch', body.switch)
-    ngx.say(response(ok))
+    ngx.say(utils.response(ok))
     return
 
 -- 快速编辑mock数据接口状态
@@ -139,7 +121,7 @@ elseif ngx.var.uri == '/admin/mock/data/quick' then
     local body = json.decode(ngx.req.get_body_data())
     local key = "mock:"..body.path..':'..body.domain  -- 前端数据id复用domain列
     local ok, err = rds:hset(key, 'switch', body.switch)
-    ngx.say(response(ok))
+    ngx.say(utils.response(ok))
     return
 
 -- 管理mock接口配置信息
@@ -159,7 +141,7 @@ elseif ngx.var.uri == '/admin/mock/path' then
         else
             ret = get_path_config(keys, text)
         end
-        ngx.say(response(ret))
+        ngx.say(utils.response(ret))
         return
     -- 新增或者修改mock path配置
     elseif method == 'POST' then
@@ -189,7 +171,7 @@ elseif ngx.var.uri == '/admin/mock/path' then
         local ok, err = rds:del(key)
         local domkey = rds:keys('config:mock:*:'..domain)[1] -- 获取domain path集合对应的key
         local ok, err = rds:srem(domkey, path)
-        ngx.say(response(key))
+        ngx.say(utils.response(key))
         return
     end
 
@@ -207,7 +189,7 @@ elseif ngx.var.uri == '/admin/mock/domain' then
                 item = {label=v, value=v}
                 table.insert(ret, item)
             end
-            ngx.say(response(ret))
+            ngx.say(utils.response(ret))
             return
         -- 第二层级联选线，返回分组下域名列表
         elseif level == '1' then 
@@ -219,7 +201,7 @@ elseif ngx.var.uri == '/admin/mock/domain' then
                 item = {label=domain, value=domain}
                 table.insert(ret, item)
             end
-            ngx.say(response(ret))
+            ngx.say(utils.response(ret))
             return
         else
             ret = {status=0, data=nil}
@@ -249,7 +231,7 @@ elseif ngx.var.uri == '/admin/mock/data' then
             end
             table.insert(ret, data)
         end
-        ngx.say(response(ret))
+        ngx.say(utils.response(ret))
         return
     -- 添加或修改mock数据配置
     elseif method == 'POST' then
@@ -280,18 +262,18 @@ elseif ngx.var.uri == '/admin/mock/data' then
             'info', body.info, 
             'delay', body.delay)
 
-        ngx.say(response(err))
+        ngx.say(utils.response(err))
         return
     -- 删除mock数据配置
     elseif method == 'DELETE' then
         local hash = ngx.req.get_uri_args()['id']
         local key = 'mock:'..path..':'..hash
         local ok, err = rds:del(key)
-        ngx.say(response(key))
+        ngx.say(utils.response(key))
         return
     end
 end
 
 
-ngx.say(response('ok'))
+ngx.say(utils.response('ok'))
 return
