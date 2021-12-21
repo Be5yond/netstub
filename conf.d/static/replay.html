@@ -157,20 +157,39 @@
                                 }
                             ]
                         },
-
+                        {
+                            "type": "divider"
+                        },
                         {
                             "type": "crud",
-                            "api": "/admin/loki?trace_id=${trace_id}",
+                            "api": "/admin/loki?host=$host&uri=$uri&trace_id=$trace_id",
                             "name": "loki_data",
+                            "mode": "cards",
+                            "defaultParams": {
+                                "perPage": 10
+                            },
+                            "columnsCount": 2,
                             // 控制面板
                             "filter": {
                                 "title": "查询日志",
                                 "submitText": "",
                                 "controls": [
                                     {
+                                        "name": "host",
+                                        "label": "host:",
                                         "type": "text",
+                                        "placeholder": "输入域名进行筛选"
+                                    },
+                                    {
+                                        "name": "uri",
+                                        "label": "uri:",
+                                        "type": "text",
+                                        "placeholder": "输入路径进行筛选"
+                                    },
+                                    {
                                         "name": "trace_id",
-                                        "placeholder": "输入trace_id进行搜索"
+                                        "label": "trace_id:",
+                                        "type": "text",
                                     },
                                     {
                                         "label": "搜索",
@@ -182,66 +201,146 @@
                                     },
                                 ]
                             },
-                            // 表格列表
-                            "columns": [
-                                {
-                                    "name": "trace_id",
-                                    "width": 250,
-                                    "label": "id"
+                            "card": {
+                                "header": {
+                                    "title": "$host$uri",
+                                    "subTitle": "trace_id:  $trace_id",
                                 },
-                                {
-                                    "name": "uri",
-                                    "label": "path",
-                                },
-                                {
-                                    "name": "response",
-                                    "label": "response",
-                                    "type": "json",
-                                    "jsonTheme": "eighties",
-                                },
-                                // 修改
-                                {
-                                    "type": "operation",
-                                    "label": "操作",
-                                    "width": 200,
-                                    "buttons": [
-                                        {
-                                            "label": "添加",
-                                            "type": "button",
-                                            "actionType": "dialog",
-                                            "level": "success",
-                                            "className": "m-b-sm pull-left",
-                                            "icon": "fa fa-edit pull-left",
-                                            "dialog": {
-                                                "size": "xl",
-                                                "title": "",
-                                                "body": {
-                                                    "type": "form",
-                                                    "api": "post:/admin/replay",
-                                                    "controls": [
-                                                        {
-                                                            "name": "path",
-                                                            "type": "text",
-                                                            "label": "path",
-                                                        },
-                                                        {
-                                                            "name": "trace_id",
-                                                            "type": "text",
-                                                            "label": "trace_id",
-                                                        },
-                                                        {
-                                                            "name": "response",
-                                                            "type": "editor",
-                                                            "language": "json",
-                                                            "label": "RESPONSE",
-                                                        },
-                                                    ]
-                                                }
+                                "body": [
+                                    {
+                                        "name": "resp_body",
+                                        "label": "response",
+                                    }
+                                ],
+                                "actions": [
+                                    {
+                                        "type": "button",
+                                        "icon": "fa fa-angle-double-up",
+                                        "label": " header",
+                                        "size": "md",
+                                        "level": "secondary",
+                                        "actionType": "dialog",
+                                        "dialog": {
+                                            "title": "request header",
+                                            "body": {
+                                                "type": "form",
+                                                "body": [
+                                                    {
+                                                        "type": "json",
+                                                        "name": "req_header",
+                                                    }
+                                                ]
                                             }
                                         }
-                                    ]
-                                }
-                            ]
+                                    },
+                                    {
+                                        "type": "action",
+                                        "icon": "fa fa-angle-double-up",
+                                        "label": " body",
+                                        "actionType": "dialog",
+                                        "dialog": {
+                                            "title": "request body",
+                                            "body": {
+                                                "type": "form",
+                                                "body": [
+                                                    {
+                                                        "type": "json",
+                                                        "name": "req_body",
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "action",
+                                        "icon": "fa fa-angle-double-up",
+                                        "label": " query",
+                                        "actionType": "dialog",
+                                        "dialog": {
+                                            "title": "request query",
+                                            "body": {
+                                                "type": "form",
+                                                "body": [
+                                                    {
+                                                        "type": "json",
+                                                        "name": "req_query",
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "divider"
+                                    },
+                                    {
+                                        "type": "action",
+                                        "icon": "fa fa-angle-double-down",
+                                        "label": " header",
+                                        "actionType": "dialog",
+                                        "dialog": {
+                                            "title": "response header",
+                                            "body": {
+                                                "type": "form",
+                                                "body": [
+                                                    {
+                                                        "type": "json",
+                                                        "name": "resp_header",
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "type": "action",
+                                        "icon": "fa fa-angle-double-down",
+                                        "label": " body",
+                                        "actionType": "dialog",
+                                        "dialog": {
+                                            "title": "response body",
+                                            "body": {
+                                                "type": "form",
+                                                "body": [
+                                                    {
+                                                        "type": "json",
+                                                        "name": "resp_body",
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "label": " 添加",
+                                        "icon": "fa fa-plus",
+                                        "actionType": "dialog",
+                                        "dialog": {
+                                            "title": "添加replay数据",
+                                            "name": "sample-bulk-edit",
+                                            "body": {
+                                                "type": "form",
+                                                "api": "post:/admin/replay",
+                                                "body": [
+                                                    {
+                                                        "type": "input-text",
+                                                        "name": "trace_id",
+                                                        "label": "trace_id"
+                                                    },
+                                                    {
+                                                        "name": "uri",
+                                                        "type": "input-text",
+                                                        "label": "path"
+                                                    },
+                                                    {
+                                                        "name": "resp_body",
+                                                        "type": "editor",
+                                                        "language": "json",
+                                                        "label": "RESPONSE",
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                ]
+                            }
                         }
                     ]
                 }
