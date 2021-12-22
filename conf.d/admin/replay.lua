@@ -39,7 +39,7 @@ if method == 'GET' then
     return
 -- 添加数据到replay数据
 elseif method == 'POST' then
-    local body = json.decode(ngx.req.get_body_data())
+    local body = json.decode(utils.get_body_data())
     local key = 'replay:'..body.uri..':'..body.trace_id --body中使用uri字段标识接口路径
     local ok, err = rds:set(key, body.resp_body)
     ngx.say(key)

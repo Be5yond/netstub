@@ -19,6 +19,7 @@
 local json = require "cjson" 
 local redis = require "resty.redis"
 local jmespath = require "resty.jmespath"
+local utils = require "utils"
 
 
 -- 连接redis
@@ -51,7 +52,7 @@ function get_trace_id()
     end
     -- trace_id在body中
     if res[3] ~= ngx.null then
-        local body = json.decode(ngx.req.get_body_data() or '{}')
+        local body = json.decode(utils.get_body_data() or '{}')
         local trace_id = jmespath.search(res[3], body)
         if trace_id then
             return trace_id
@@ -103,7 +104,7 @@ if res ~= ngx.null then
     end
     -- 拼接body数据
     if fields.body then
-        local body = json.decode(ngx.req.get_body_data() or '{}')
+        local body = json.decode(utils.get_body_data() or '{}')
         for k, expression in pairs(fields.body) do
             val = jmespath.search(expression, body)
             table.insert(tab, val)

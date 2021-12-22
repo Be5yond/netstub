@@ -110,7 +110,7 @@ end
 local method = ngx.req.get_method()
 -- 快速编辑接口default数据状态
 if ngx.var.uri == '/admin/mock/path/quick' then
-    local body = json.decode(ngx.req.get_body_data())
+    local body = json.decode(utils.get_body_data())
     local key = "config:path:"..body.path
     local ok, err = rds:hset(key, 'switch', body.switch)
     ngx.say(utils.response(ok))
@@ -118,7 +118,7 @@ if ngx.var.uri == '/admin/mock/path/quick' then
 
 -- 快速编辑mock数据接口状态
 elseif ngx.var.uri == '/admin/mock/data/quick' then
-    local body = json.decode(ngx.req.get_body_data())
+    local body = json.decode(utils.get_body_data())
     local key = "mock:"..body.path..':'..body.domain  -- 前端数据id复用domain列
     local ok, err = rds:hset(key, 'switch', body.switch)
     ngx.say(utils.response(ok))
@@ -145,7 +145,7 @@ elseif ngx.var.uri == '/admin/mock/path' then
         return
     -- 新增或者修改mock path配置
     elseif method == 'POST' then
-        local body = json.decode(ngx.req.get_body_data())
+        local body = json.decode(utils.get_body_data())
         local path = body.path
         local group, domain = string.gmatch(body.chained, '(%S+),(%S+)')()
         body.chained = nil
@@ -210,7 +210,7 @@ elseif ngx.var.uri == '/admin/mock/domain' then
         end
     -- 新增一个域名
     elseif method == 'POST' then
-        local body = json.decode(ngx.req.get_body_data())
+        local body = json.decode(utils.get_body_data())
         local ok, err = rds:sadd('config:mock:groups', body.group)
         local ok, err = rds:sadd('config:mock:'..body.group..':'..body.domain, '_')
     end
@@ -235,8 +235,7 @@ elseif ngx.var.uri == '/admin/mock/data' then
         return
     -- 添加或修改mock数据配置
     elseif method == 'POST' then
-        local type = ngx.req.get_uri_args()['type']
-        local body = json.decode(ngx.req.get_body_data())
+        local body = json.decode(utils.get_body_data())
         -- local hash = ngx.md5(table.concat(json.decode(body.data)))
         -- 计算数据md5
         local tab = {}
