@@ -9,7 +9,7 @@ RUN curl -o  /usr/local/openresty/lualib/resty/jmespath.lua https://raw.githubus
 # 安装 crontabs
 RUN yum -y install crontabs
 # 添加定时任务  每日清空access.log文件
-RUN echo "* * */1 * * cat /dev/null > /var/log/nginx/access.log"
+RUN echo "* * */1 * * cat /dev/null > /var/log/nginx/access.log" >> /var/spool/cron/root
 # 启动crond
 RUN /usr/sbin/crond -i
 
